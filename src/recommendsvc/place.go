@@ -6,12 +6,11 @@ import (
 )
 
 type Place struct {
-        Id int
-        Name string
-        Open string
-        Locality string
-        Geo []float64
-        Features []float64
+	Id       int
+	Name     string
+	Locality string
+	Geo      []float64
+	Features []float64
 }
 
 func FindPlace(id int, places []Place) (*Place, error) {
@@ -27,7 +26,7 @@ func (this *Place) Score(other *Place) float64 {
 	length := len(this.Features)
 	var value float64
 	for i := 0; i < length; i++ {
-		value += math.Pow(this.Features[i] - other.Features[i], 2.0)
+		value += math.Pow(this.Features[i]-other.Features[i], 2.0)
 	}
 	return math.Sqrt(value)
 }

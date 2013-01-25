@@ -1,12 +1,12 @@
 package recommendsvc
 
 type Result struct {
-	Id int
-	Name string
+	Id       int
+	Name     string
 	Locality string
-	Geo []float64
+	Geo      []float64
 	Distance float64
-	Score float64
+	Score    float64
 }
 
 func NewResult(place Place, distance float64, score float64) *Result {
@@ -19,5 +19,3 @@ func NewResult(place Place, distance float64, score float64) *Result {
 	result.Score = score
 	return result
 }
-
-

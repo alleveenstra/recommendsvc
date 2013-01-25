@@ -1,13 +1,14 @@
 package main
 
 import (
-  	"recommendsvc"
-	"fmt"
-	"os"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
-	"log")
+	"os"
+	"recommendsvc"
+)
 
 func main() {
 	if len(os.Args) < 3 {
@@ -29,7 +30,7 @@ func main() {
 	log.Println("Starting webserver...")
 	http.HandleFunc("/recommendation", recommendsvc.Build_recommendation_handler(places))
 	http_err := http.ListenAndServe(os.Args[2], nil)
-	if (http_err != nil) {
+	if http_err != nil {
 		log.Fatalf("Error creating server: %v", http_err)
 		return
 	}

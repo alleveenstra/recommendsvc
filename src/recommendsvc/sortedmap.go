@@ -1,11 +1,11 @@
 package recommendsvc
 
 type SortedMap struct {
-	M map[int] float64
+	M map[int]float64
 	S []int
 }
 
-func NewSortedMap(m map[int] float64) *SortedMap {
+func NewSortedMap(m map[int]float64) *SortedMap {
 	sm := new(SortedMap)
 	sm.M = m
 	sm.S = make([]int, len(m))
@@ -28,4 +28,3 @@ func (sm *SortedMap) Less(i, j int) bool {
 func (sm *SortedMap) Swap(i, j int) {
 	sm.S[i], sm.S[j] = sm.S[j], sm.S[i]
 }
-

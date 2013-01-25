@@ -1,19 +1,19 @@
 package recommendsvc
 
 import (
-	"fmt"
-	"net/http"
-	"log"
-	"sort"
-	"encoding/json"
-	"strconv"
-	"math"
-	"errors"
-	"io"
 	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"math"
+	"net/http"
+	"sort"
+	"strconv"
 )
 
-func Build_recommendation_handler(places []Place) (func (response http.ResponseWriter, request *http.Request)) {
+func Build_recommendation_handler(places []Place) func(response http.ResponseWriter, request *http.Request) {
 	return func(response http.ResponseWriter, request *http.Request) {
 		id, count, geo, rng, parseErr := parse_request(request)
 		if parseErr != nil {
@@ -40,8 +40,8 @@ func Build_recommendation_handler(places []Place) (func (response http.ResponseW
 			results[i] = *result
 		}
 		dat, err := json.Marshal(results)
-		if (err == nil) {
-			buffer.WriteString(fmt.Sprintf("%s", dat));
+		if err == nil {
+			buffer.WriteString(fmt.Sprintf("%s", dat))
 		} else {
 			log.Panicf("Marshalling error %v", err)
 			http.Error(response, "500 Internal server error.", 500)
@@ -54,10 +54,9 @@ func Build_recommendation_handler(places []Place) (func (response http.ResponseW
 	}
 }
 
-
-func calculate_scores(query *Place, geo []float64, places []Place, rng float64) map[int] float64 {
+func calculate_scores(query *Place, geo []float64, places []Place, rng float64) map[int]float64 {
 	length := len(places)
-	var output = make(map[int] float64, length)
+	var output = make(map[int]float64, length)
 	for i := 0; i < length; i++ {
 		switch {
 		case places[i].Id == query.Id:
@@ -76,7 +75,7 @@ func distance(left []float64, right []float64) float64 {
 	phi1 := left[0] * deg
 	phi2 := right[0] * deg
 	lam12 := (right[1] - left[1]) * deg
-	d2 := math.Pow(math.Cos(phi1) * math.Sin(phi2) - math.Sin(phi1) * math.Cos(phi2) * math.Cos(lam12), 2.0) + math.Pow(math.Cos(phi2) * math.Sin(lam12), 2.0)
+	d2 := math.Pow(math.Cos(phi1)*math.Sin(phi2)-math.Sin(phi1)*math.Cos(phi2)*math.Cos(lam12), 2.0) + math.Pow(math.Cos(phi2)*math.Sin(lam12), 2.0)
 	return 6371.009 * math.Asin(math.Sqrt(d2))
 }
 
@@ -86,7 +85,7 @@ func parse_request(request *http.Request) (int, int, []float64, float64, error) 
 	lat, latErr := strconv.ParseFloat(request.FormValue("lat"), 64)
 	lng, lngErr := strconv.ParseFloat(request.FormValue("lng"), 64)
 	rng, rngErr := strconv.ParseFloat(request.FormValue("rng"), 64)
-	geo := []float64{lat,lng}
+	geo := []float64{lat, lng}
 	if idErr == nil && countErr == nil && latErr == nil && lngErr == nil && rngErr == nil {
 		return id, count, geo, rng, nil
 	}

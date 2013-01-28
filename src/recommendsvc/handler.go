@@ -58,13 +58,14 @@ func calculate_scores(query *Place, geo []float64, places []Place, rng float64) 
 	length := len(places)
 	var output = make(map[int]float64, length)
 	for i := 0; i < length; i++ {
+		output[i] = 0
 		switch {
 		case places[i].Id == query.Id:
-			output[i] = 1000
+			output[i] += 100
 		case distance(geo, places[i].Geo) > rng:
-			output[i] = 1000
+			output[i] += 10
 		default:
-			output[i] = query.Score(&places[i])
+			output[i] += query.Score(&places[i])
 		}
 	}
 	return output

@@ -28,7 +28,8 @@ func main() {
 		return
 	}
 	log.Println("Starting webserver...")
-	http.HandleFunc("/recommendation", recommendsvc.Build_recommendation_handler(places))
+	http.HandleFunc("/geo", recommendsvc.Build_geo_handler(places))
+	http.HandleFunc("/locality", recommendsvc.Build_locality_handler(places))
 	http_err := http.ListenAndServe(os.Args[2], nil)
 	if http_err != nil {
 		log.Fatalf("Error creating server: %v", http_err)

@@ -7,15 +7,13 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"net/http"
-	"sort"
 	"strconv"
 )
 
-func Build_recommendation_handler(places []Place) func(response http.ResponseWriter, request *http.Request) {
+func Build_geo_handler(places []Place) func(response http.ResponseWriter, request *http.Request) {
 	return func(response http.ResponseWriter, request *http.Request) {
-		id, count, geo, rng, parseErr := parse_request(request)
+		id, count, geo, rng, parseErr := parse_geo_request(request)
 		if parseErr != nil {
 			log.Println(fmt.Sprintf("%v %s %s", parseErr, request.URL.Path, request.URL.RawQuery))
 			http.Error(response, "400 Malformed request.", 400)
@@ -27,19 +25,10 @@ func Build_recommendation_handler(places []Place) func(response http.ResponseWri
 			http.Error(response, "400 Malformed request.", 400)
 			return
 		}
-		scores_map := calculate_scores(query, geo, places, rng)
-		scores_sortedmap := NewSortedMap(scores_map)
-		sort.Sort(scores_sortedmap)
-		var buffer bytes.Buffer
-		results := make([]Result, count)
-		for i := 0; i < count; i++ {
-			key := scores_sortedmap.S[i]
-			score := scores_sortedmap.M[key]
-			distance := distance(geo, places[key].Geo)
-			result := NewResult(places[key], distance, score)
-			results[i] = *result
-		}
+		scores := calculate_geo_scores(query, geo, places, rng)
+		results := Scores_to_result(scores, places, count)
 		dat, err := json.Marshal(results)
+		var buffer bytes.Buffer
 		if err == nil {
 			buffer.WriteString(fmt.Sprintf("%s", dat))
 		} else {
@@ -54,7 +43,7 @@ func Build_recommendation_handler(places []Place) func(response http.ResponseWri
 	}
 }
 
-func calculate_scores(query *Place, geo []float64, places []Place, rng float64) map[int]float64 {
+func calculate_geo_scores(query *Place, geo []float64, places []Place, rng float64) map[int]float64 {
 	length := len(places)
 	var output = make(map[int]float64, length)
 	for i := 0; i < length; i++ {
@@ -62,7 +51,7 @@ func calculate_scores(query *Place, geo []float64, places []Place, rng float64) 
 		switch {
 		case places[i].Id == query.Id:
 			output[i] += 100
-		case distance(geo, places[i].Geo) > rng:
+		case Distance(geo, places[i].Geo) > rng:
 			output[i] += 10
 		default:
 			output[i] += query.Score(&places[i])
@@ -71,16 +60,7 @@ func calculate_scores(query *Place, geo []float64, places []Place, rng float64) 
 	return output
 }
 
-func distance(left []float64, right []float64) float64 {
-	deg := math.Pi / 180.0
-	phi1 := left[0] * deg
-	phi2 := right[0] * deg
-	lam12 := (right[1] - left[1]) * deg
-	d2 := math.Pow(math.Cos(phi1)*math.Sin(phi2)-math.Sin(phi1)*math.Cos(phi2)*math.Cos(lam12), 2.0) + math.Pow(math.Cos(phi2)*math.Sin(lam12), 2.0)
-	return 6371.009 * math.Asin(math.Sqrt(d2))
-}
-
-func parse_request(request *http.Request) (int, int, []float64, float64, error) {
+func parse_geo_request(request *http.Request) (int, int, []float64, float64, error) {
 	id, idErr := strconv.Atoi(request.FormValue("id"))
 	count, countErr := strconv.Atoi(request.FormValue("count"))
 	lat, latErr := strconv.ParseFloat(request.FormValue("lat"), 64)

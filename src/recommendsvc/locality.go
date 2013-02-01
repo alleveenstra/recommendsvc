@@ -1,12 +1,9 @@
 package recommendsvc
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -15,31 +12,23 @@ func Build_locality_handler(places []Place) func(response http.ResponseWriter, r
 	return func(response http.ResponseWriter, request *http.Request) {
 		id, count, locality, parseErr := parse_locality_request(request)
 		if parseErr != nil {
-			log.Println(fmt.Sprintf("%v %s %s", parseErr, request.URL.Path, request.URL.RawQuery))
-			http.Error(response, "400 Malformed request.", 400)
+			Http_error(parseErr, 400, response, request)
 			return
 		}
 		query, findErr := FindPlace(id, places)
 		if findErr != nil {
-			log.Println(fmt.Sprintf("%v %s %s", parseErr, request.URL.Path, request.URL.RawQuery))
-			http.Error(response, "400 Malformed request.", 400)
+			Http_error(findErr, 400, response, request)
 			return
 		}
 		scores := calculate_locality_scores(query, locality, places)
 		results := Scores_to_result(scores, places, count)
 		dat, err := json.Marshal(results)
-		var buffer bytes.Buffer
 		if err == nil {
-			buffer.WriteString(fmt.Sprintf("%s", dat))
+			Http_json(fmt.Sprintf("%s", dat), response, request)
 		} else {
-			log.Panicf("Marshalling error %v", err)
-			http.Error(response, "500 Internal server error.", 500)
+			Http_error(findErr, 500, response, request)
 			return
 		}
-		log.Println(fmt.Sprintf("Succesfully handled request %s %s", request.URL.Path, request.URL.RawQuery))
-		response.Header().Set("Content-Type", "application/json; charset=utf-8")
-		response.Header().Set("Content-Length", strconv.Itoa(buffer.Len()))
-		io.WriteString(response, buffer.String())
 	}
 }
 

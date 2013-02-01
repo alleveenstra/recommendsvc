@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 func Build_locality_handler(places []Place) func(response http.ResponseWriter, request *http.Request) {
@@ -40,7 +41,7 @@ func calculate_locality_scores(query *Place, locality string, places []Place) ma
 		switch {
 		case places[i].Id == query.Id:
 			output[i] += 100
-		case places[i].Locality != locality:
+		case strings.ToLower(places[i].Locality) != locality:
 			output[i] += 10
 		default:
 			output[i] += query.Score(&places[i])

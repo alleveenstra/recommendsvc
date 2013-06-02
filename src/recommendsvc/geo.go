@@ -22,7 +22,7 @@ func Build_geo_handler(places []Place) func(response http.ResponseWriter, reques
 		}
 		scores := calculate_geo_scores(query, geo, places, rng)
 		results := Scores_to_result(scores, places, count)
-		dat, err := json.Marshal(results)
+		dat, err := json.MarshalIndent(results, " ", "  ")
 		if err == nil {
 			Http_json(fmt.Sprintf("%s", dat), response, request)
 		} else {

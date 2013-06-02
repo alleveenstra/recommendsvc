@@ -23,7 +23,7 @@ func Build_locality_handler(places []Place) func(response http.ResponseWriter, r
 		}
 		scores := calculate_locality_scores(query, locality, places)
 		results := Scores_to_result(scores, places, count)
-		dat, err := json.Marshal(results)
+		dat, err := json.MarshalIndent(results, " ", "  ")
 		if err == nil {
 			Http_json(fmt.Sprintf("%s", dat), response, request)
 		} else {

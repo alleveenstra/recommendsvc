@@ -5,6 +5,7 @@ type Result struct {
 	Name     string
 	Locality string
 	Geo      []float64
+	Features []float64
 	Score    float64
 }
 
@@ -14,6 +15,7 @@ func NewResult(place Place, score float64) *Result {
 	result.Name = place.Name
 	result.Locality = place.Locality
 	result.Geo = place.Geo
+	result.Features = place.Features
 	result.Score = score
 	return result
 }
